@@ -16,3 +16,36 @@
   
 # 使用
   进入 **./Debug** 目录,先启动 **Server.exe** ,再按顺序启动 **Client0.exe** 和 **Client1.exe** 。
+    
+  
+# 记录
+  
+  * socket()命名冲突时,使用::socket().
+    ```cpp
+    this->socket = ::socket(AF_INET, SOCK_STREAM, IPPROTO_TCP
+    ```  
+  
+  * 若创建了一个int buffer[512],在recv()和send()中要使用buffer时,可以直接用(char*)buffer.
+    ```cpp
+    recv(client, (char*)keyBuffer, sizeof(keyBuffer), 0);
+    send(client, (char*)positions, sizeof(positions), 0);
+    ```
+  
+  * 当传输的数据本身定义时是一个指针时,发送的大小不能用sizeof(),因为这样sizeof()仅仅是指针的大小.
+    ```cpp
+    send(client.serverSocket, (char*)window.screen_keys, 512, 0);//这里得用具体大小512
+    ```
+  
+  * 将客户端的渲染和通信放在同一个while循环里,而不是分两个线程,可以避免多线程访问冲突的问题.  
+  
+  
+  * 使用多线程时,注意数据的变化.
+    如,当在t线程中使用threadCnt时,其实是使用的变化后的值:
+    ```cpp
+  	t.detach();
+		threadCnt++; threadCnt %= 2;
+    ```
+    把threadCnt在线程调用时当作参数传入,可正确使用其变化前的值:
+    ```cpp
+    std::thread t(this->ServiceClient, clientAddr, client, threadCnt);
+    ```
